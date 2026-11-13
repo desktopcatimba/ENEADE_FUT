@@ -1,0 +1,321 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+enum SeasonStatus {
+  REGULAR
+  WINDOW
+  CLOSED
+}
+enum PlayerStatus {
+  ACTIVE
+  SOLD
+  RELEASED
+}
+enum LedgerType {
+  INITIAL
+  MATCH
+  PRIZE_PLACE
+  PRIZE_INDIVIDUAL
+  UPGRADE
+  BUY
+  SELL
+  LOAN
+  AUCTION
+  POSITION_CHANGE
+  ADJUSTMENT
+}
+enum MatchResult {
+  HOME_WIN
+  DRAW
+  AWAY_WIN
+}
+enum AuctionStatus {
+  OPEN
+  CLOSED
+  NO_BIDS
+}
+enum TransferType {
+  BUY
+  SELL
+  LOAN
+  AUCTION
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  birthDate    DateTime
+  phone        String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  selectedTeamId String?
+  selectedTeam Team? @relation("UserSelectedTeam", fields: [selectedTeamId], references: [id])
+  teams        Team[] @relation("UserOwnedTeam")
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation("UserOwnedTeam", fields: [userId], references: [id])
+  selectedBy User[] @relation("UserSelectedTeam")
+  name      String
+  crest     String?
+  formation String   @default("4-3-3")
+  catalogTeamId Int?
+  createdAt DateTime @default(now())
+
+  players  TeamPlayer[]
+  ledger   PointsLedger[]
+  transfers TransferRecord[]
+  drafts   TacticDraft[]
+  bids     Bid[]
+  homeMatches Match[] @relation("home")
+  awayMatches Match[] @relation("away")
+  freeAgentPicks FreeAgent[]
+
+  @@index([userId])
+}
+
+model ApiCache {
+  key       String   @id
+  payload   Json
+  expiresAt DateTime
+  fetchedAt DateTime @default(now())
+}
+
+// Dados originais do dataset (só leitura). FIFA 23 e 24 coexistem.
+model BasePlayer {
+  id             Int      @id @default(autoincrement())
+  sofifaId       Int
+  fifaVersion    Int
+  shortName      String
+  longName       String
+  positions      String[]
+  overall        Int
+  potential      Int
+  age            Int?
+  dob            String?
+  heightCm       Int?
+  weightKg       Int?
+  clubName       String?
+  leagueName     String?
+  nationality    String?
+  preferredFoot  String?
+  weakFoot       Int?
+  skillMoves     Int?
+  workRate       String?
+  bodyType       String?
+  valueEur       Int?
+  playerUrl      String
+  faceStats      Json     // pace, shooting, passing, dribbling, defending, physic
+  attrs          Json     // 34 atributos agrupados (attacking*, skill*, movement*, power*, mentality*, defending*, goalkeeping*)
+  positionRatings Json    // overall por posição (st, cb, cm, gk...)
+
+  teamPlayers TeamPlayer[]
+  freeAgents  FreeAgent[]
+  auctions    Auction[]
+
+  @@unique([sofifaId, fifaVersion])
+  @@index([fifaVersion, overall])
+  @@index([shortName])
+  @@index([clubName])
+}
+
+// Jogador criado no jogo: perfil equivalente ao catálogo, sem fifaVersion/sofifaId.
+model CustomPlayer {
+  id             String   @id @default(cuid())
+  shortName      String
+  longName       String
+  positions      String[]
+  overall        Int
+  potential      Int
+  age            Int?
+  dob            String?
+  heightCm       Int?
+  weightKg       Int?
+  clubName       String?
+  leagueName     String?
+  nationality    String?
+  preferredFoot  String?
+  weakFoot       Int?
+  skillMoves     Int?
+  workRate       String?
+  bodyType       String?
+  valueEur       Int?
+  playerUrl      String
+  faceStats      Json
+  attrs          Json
+  positionRatings Json
+  createdAt      DateTime @default(now())
+
+  teamPlayers TeamPlayer[]
+
+  @@index([shortName])
+  @@index([clubName])
+}
+
+// Jogador no elenco de uma equipa, com valores já evoluídos.
+model TeamPlayer {
+  id                  String       @id @default(cuid())
+  teamId              String
+  team                Team         @relation(fields: [teamId], references: [id])
+  basePlayerId        Int?
+  basePlayer          BasePlayer?  @relation(fields: [basePlayerId], references: [id])
+  customPlayerId      String?
+  customPlayer        CustomPlayer? @relation(fields: [customPlayerId], references: [id])
+  displayName         String?
+  status              PlayerStatus @default(ACTIVE)
+  isLoan              Boolean      @default(false)
+  loanUntil           DateTime?
+  overall             Int          // overall atual (muda com evolução)
+  attrs               Json         // atributos atuais
+  upgradesThisSeason  Json         @default("{}") // { "attackingFinishing": 2, ... } máx 5 cada
+  position            String       // posição atual (trocar custa 50 pts)
+  acquiredPrice       Int          @default(0)
+  acquiredSeasonId    Int?
+  createdAt           DateTime     @default(now())
+
+  @@index([teamId, status])
+}
+
+model Season {
+  id        Int          @id @default(autoincrement())
+  number    Int          @unique
+  status    SeasonStatus @default(REGULAR)
+  fifaVersion Int        @default(24)
+  startsAt  DateTime?
+  endsAt    DateTime?
+
+  matches  Match[]
+  windows  TransferWindow[]
+  ledger   PointsLedger[]
+}
+
+// Pontos nunca são editados diretamente: só por lançamentos (saldo = soma).
+model PointsLedger {
+  id          Int        @id @default(autoincrement())
+  teamId      String
+  team        Team       @relation(fields: [teamId], references: [id])
+  seasonId    Int?
+  season      Season?    @relation(fields: [seasonId], references: [id])
+  type        LedgerType
+  amount      Int        // positivo ganha, negativo gasta
+  description String?
+  createdAt   DateTime   @default(now())
+
+  @@index([teamId])
+}
+
+model TransferRecord {
+  id          String       @id @default(cuid())
+  teamId      String
+  team        Team         @relation(fields: [teamId], references: [id])
+  type        TransferType
+  playerName  String
+  amount      Int
+  description String?
+  createdAt   DateTime     @default(now())
+
+  @@index([teamId, createdAt])
+}
+
+model Match {
+  id         Int          @id @default(autoincrement())
+  seasonId   Int
+  season     Season       @relation(fields: [seasonId], references: [id])
+  homeTeamId String
+  awayTeamId String
+  home       Team         @relation("home", fields: [homeTeamId], references: [id])
+  away       Team         @relation("away", fields: [awayTeamId], references: [id])
+  homeGoals  Int?
+  awayGoals  Int?
+  result     MatchResult?
+  playedAt   DateTime?
+}
+
+model TransferWindow {
+  id        Int          @id @default(autoincrement())
+  seasonId  Int
+  season    Season       @relation(fields: [seasonId], references: [id])
+  isOpen    Boolean      @default(false)
+  pickOrder Json         @default("[]") // teamIds: último colocado primeiro
+  freeAgents FreeAgent[]
+  auctions   Auction[]
+}
+
+// Pool de agentes livres definido antes da janela
+model FreeAgent {
+  id           Int            @id @default(autoincrement())
+  windowId     Int
+  window       TransferWindow @relation(fields: [windowId], references: [id])
+  basePlayerId Int
+  basePlayer   BasePlayer     @relation(fields: [basePlayerId], references: [id])
+  takenByTeamId String?
+  takenBy      Team?          @relation(fields: [takenByTeamId], references: [id])
+
+  @@unique([windowId, basePlayerId])
+}
+
+model Auction {
+  id            Int           @id @default(autoincrement())
+  windowId      Int
+  window        TransferWindow @relation(fields: [windowId], references: [id])
+  basePlayerId  Int
+  basePlayer    BasePlayer    @relation(fields: [basePlayerId], references: [id])
+  minBid        Int
+  status        AuctionStatus @default(OPEN)
+  endsAt        DateTime?
+  winnerTeamId  String?
+  winningBid    Int?
+  bids          Bid[]
+}
+
+model Bid {
+  id        Int      @id @default(autoincrement())
+  auctionId Int
+  auction   Auction  @relation(fields: [auctionId], references: [id])
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id])
+  amount    Int
+  createdAt DateTime @default(now())
+
+  @@index([auctionId, amount])
+}
+
+model TacticDraft {
+  id        String   @id @default(cuid())
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id])
+  name      String
+  formation String
+  slots     Json     // [{ slot:"ST", x:0.5, y:0.2, teamPlayerId:"..." }]
+  notes     String?
+  updatedAt DateTime @updatedAt
+}
+
+// Tabela de preços do PDF (overall 60-91)
+model PriceTier {
+  overall  Int @id
+  buyPrice Int
+  sellPrice Int
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    String?
+  action    String
+  payload   Json?
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,301 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name=claude:viewport-fit-sides content=cover><style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-right:env(safe-area-inset-right,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}</style><style>.md-table{overflow-x:auto}@media print{.md-table{overflow-x:visible}}</style><style>:root{color-scheme:light dark;--md-bg:#fff;--md-text:rgba(0,0,0,.8);--md-muted:rgba(0,0,0,.6);--md-fill:rgba(0,0,0,.04);--md-fill-strong:rgba(0,0,0,.06);--md-rule:rgba(0,0,0,.1);--md-rule-strong:rgba(0,0,0,.16);--md-link:hsl(210 100% 45%)}@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){--md-bg:#0d0d0d;--md-text:rgba(255,255,255,.85);--md-muted:rgba(255,255,255,.6);--md-fill:rgba(255,255,255,.06);--md-fill-strong:rgba(255,255,255,.09);--md-rule:rgba(255,255,255,.14);--md-rule-strong:rgba(255,255,255,.22);--md-link:hsl(210 100% 72%)}}:root[data-theme="dark"]{color-scheme:dark;--md-bg:#0d0d0d;--md-text:rgba(255,255,255,.85);--md-muted:rgba(255,255,255,.6);--md-fill:rgba(255,255,255,.06);--md-fill-strong:rgba(255,255,255,.09);--md-rule:rgba(255,255,255,.14);--md-rule-strong:rgba(255,255,255,.22);--md-link:hsl(210 100% 72%)}:root[data-theme="light"]{color-scheme:light}@media print{:root,:root[data-theme="dark"]{color-scheme:light;--md-bg:#fff;--md-text:rgba(0,0,0,.8);--md-muted:rgba(0,0,0,.6);--md-fill:rgba(0,0,0,.04);--md-fill-strong:rgba(0,0,0,.06);--md-rule:rgba(0,0,0,.1);--md-rule-strong:rgba(0,0,0,.16);--md-link:hsl(210 100% 45%)}}body{background:var(--md-bg);color:var(--md-text);max-width:720px;margin:0 auto;padding:32px;display:flex;flex-direction:column;gap:10px;font:14px/1.55 -apple-system,BlinkMacSystemFont,'SF Pro','Segoe UI',sans-serif;overflow-wrap:break-word}body>:first-child{margin-top:0}h1,h2,h3,h4,h5,h6{margin:6px 0 0;line-height:1.25;font-weight:600;text-wrap:balance}h1{font-size:1.35em}h2{font-size:1.15em;color:var(--md-muted)}h3,h4,h5,h6{font-size:1em}p,ul,ol,blockquote,table,pre,hr{margin:0}strong{font-weight:600}a{color:var(--md-link);text-decoration:none}a:hover{text-decoration:underline}ul,ol{display:flex;flex-direction:column;gap:6px;padding-left:22px}ul{list-style:disc}ol{list-style:decimal}:is(li,td,th)>*+:is(p,ul,ol,blockquote){margin-top:6px}blockquote{display:flex;flex-direction:column;gap:10px;border-left:2px solid var(--md-rule);padding-left:10px;color:var(--md-muted)}:not(pre)>code{background:var(--md-fill);padding:1px 3px;border-radius:4px;font:.92em 'SF Mono',ui-monospace,Menlo,Consolas,monospace}a>code{background:none;color:inherit}pre{background:var(--md-fill);padding:10px 12px;border-radius:6px;overflow-x:auto;font:12px/1.5 'SF Mono',ui-monospace,Menlo,Consolas,monospace;margin-block:4px}pre code{background:none;padding:0;font:inherit}table{width:100%;border-collapse:separate;border-spacing:2px;font:inherit}th,td{padding:6px 8px;border-radius:3px;text-align:left;vertical-align:top}th{background:var(--md-fill-strong);font-weight:600}td{background:var(--md-fill)}:is(th,td) :not(pre)>code{background:transparent}hr{border:0;border-top:1px solid var(--md-rule-strong);margin-block:10px}img{max-width:100%;height:auto;border-radius:4px}</style>
+</head><body>
+<h1>ENEADE FUT – Plano de Desenvolvimento</h1>
+<p>Sistema web para gerir a <strong>Liga dos 6 Clubes</strong>: contas, equipas, jogadores FIFA 23/24, pontos, evolução de atributos, mercado, leilão, rating da equipa e rascunhos de tática.</p>
+<hr>
+<h2>1. Arquitetura recomendada</h2>
+<div class="md-table" role="group" aria-label="Table" tabindex="0"><table>
+<thead>
+<tr>
+<th>Camada</th>
+<th>Tecnologia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frontend</td>
+<td>Next.js (App Router) + TypeScript + Tailwind</td>
+</tr>
+<tr>
+<td>API</td>
+<td>Node.js + Express + TypeScript (necessário para leilão em tempo real com Socket.IO)</td>
+</tr>
+<tr>
+<td>Base de dados</td>
+<td>PostgreSQL + Prisma ORM</td>
+</tr>
+<tr>
+<td>Tempo real</td>
+<td>Socket.IO (leilão ao vivo)</td>
+</tr>
+<tr>
+<td>Auth</td>
+<td>JWT em cookie httpOnly + bcrypt</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Estrutura (monorepo):</p>
+<pre><code>eneade-fut/
+  apps/web      (Next.js)
+  apps/api      (Node + Express)
+  packages/shared (tipos e regras de pontos, usadas nos dois)
+  data/         (CSV dos jogadores)
+</code></pre>
+<p>Dica: colocar as <strong>regras de custo/preço/evolução em <code>packages/shared</code></strong> para frontend e backend usarem exatamente o mesmo cálculo.</p>
+<hr>
+<h2>2. Libs a instalar</h2>
+<h3>Backend (<code>apps/api</code>)</h3>
+<pre><code class="language-bash">npm i express cors helmet cookie-parser express-rate-limit zod bcrypt jsonwebtoken \
+      @prisma/client socket.io csv-parse dotenv pino
+npm i -D typescript tsx prisma @types/node @types/express @types/cors \
+         @types/cookie-parser @types/bcrypt @types/jsonwebtoken
+npx prisma init
+</code></pre>
+<h3>Frontend (<code>apps/web</code>)</h3>
+<pre><code class="language-bash">npx create-next-app@latest web --ts --tailwind --app
+npm i @tanstack/react-query zustand react-hook-form zod @hookform/resolvers \
+      socket.io-client recharts framer-motion lucide-react sonner next-themes \
+      @dnd-kit/core @dnd-kit/utilities html-to-image clsx tailwind-merge
+npx shadcn@latest init
+</code></pre>
+<p>Para que serve cada uma: <strong>recharts</strong> (radar de atributos e gráficos do rating), <strong>framer-motion</strong> (animações de cartas e leilão), <strong>dnd-kit</strong> (arrastar jogadores no campo tático), <strong>html-to-image</strong> (exportar tática como PNG), <strong>react-hook-form + zod</strong> (formulários e validação), <strong>sonner</strong> (notificações).</p>
+<hr>
+<h2>3. Como obter os dados dos jogadores (FIFA 23/24)</h2>
+<p>Não existe API oficial gratuita da EA. Opções, da mais segura à menos:</p>
+<ol>
+<li><strong>Dataset CSV do Kaggle (recomendado).</strong> Pesquisar &quot;EA Sports FC 24 complete player dataset&quot; (autor Stefano Leone) e &quot;FIFA 23 complete player dataset&quot;. Trazem overall, posição, idade, clube, foto e todos os atributos. Descarregas o CSV e importas uma vez para o teu Postgres com um script de seed (<code>csv-parse</code> + Prisma <code>createMany</code>).</li>
+<li><strong>Sites como SoFIFA / FUTDB / FUT.GG.</strong> Têm os dados, mas fazer scraping pode violar os termos de uso e quebra com facilidade. Usa só para conferir.</li>
+<li><strong>Fotos e escudos:</strong> os CSVs trazem URLs das imagens (SoFIFA). Para produção, descarrega e hospeda tu mesmo (ou usa iniciais/avatar gerado) para não depender de links externos.</li>
+</ol>
+<p>Como o projeto é privado entre amigos, o CSV é o caminho mais simples. Confirma os nomes das colunas ao abrir o ficheiro, mudam um pouco entre versões.</p>
+<p><strong>Mapeamento dos atributos (agrupados como no FIFA 24):</strong></p>
+<div class="md-table" role="group" aria-label="Table" tabindex="0"><table>
+<thead>
+<tr>
+<th>Grupo</th>
+<th>Atributos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ataque</td>
+<td>crossing, finishing, heading accuracy, short passing, volleys</td>
+</tr>
+<tr>
+<td>Habilidade</td>
+<td>dribbling, curve, FK accuracy, long passing, ball control</td>
+</tr>
+<tr>
+<td>Movimento</td>
+<td>acceleration, sprint speed, agility, reactions, balance</td>
+</tr>
+<tr>
+<td>Potência</td>
+<td>shot power, jumping, stamina, strength, long shots</td>
+</tr>
+<tr>
+<td>Mentalidade</td>
+<td>aggression, interceptions, positioning, vision, penalties, composure</td>
+</tr>
+<tr>
+<td>Defesa</td>
+<td>marking/awareness, standing tackle, sliding tackle</td>
+</tr>
+<tr>
+<td>Guarda-redes</td>
+<td>diving, handling, kicking, positioning, reflexes</td>
+</tr>
+<tr>
+<td>Extras</td>
+<td>weak foot (1-5), skill moves (1-5), pé preferido, posições</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2>4. Modelo de dados (Prisma, resumo)</h2>
+<ul>
+<li><strong>User</strong>: id, name, email (único), passwordHash, birthDate, phone, createdAt</li>
+<li><strong>Team</strong>: id, userId (<strong>único</strong> → 1 equipa por utilizador), name, points, crest</li>
+<li><strong>BasePlayer</strong>: dados originais do CSV (só leitura)</li>
+<li><strong>TeamPlayer</strong>: teamId, basePlayerId, overallAtual, atributos atuais (JSON), <code>upgradesThisSeason</code> (JSON por atributo), contractPrice, posição atual</li>
+<li><strong>Season</strong>: número, estado (<code>REGULAR</code>, <code>WINDOW</code>, <code>CLOSED</code>)</li>
+<li><strong>PointsLedger</strong>: teamId, seasonId, tipo (<code>MATCH</code>, <code>PRIZE</code>, <code>UPGRADE</code>, <code>BUY</code>, <code>SELL</code>, <code>AUCTION</code>, <code>POSITION_CHANGE</code>), valor (+/−), descrição, data. <strong>Os pontos nunca são editados direto, sempre via lançamento</strong>, assim tens histórico e auditoria.</li>
+<li><strong>Match</strong>: seasonId, casa, fora, resultado</li>
+<li><strong>TransferWindow</strong>, <strong>FreeAgentPool</strong> (lista definida antes da janela)</li>
+<li><strong>Auction</strong>: playerId, minBid, estado, endsAt; <strong>Bid</strong>: auctionId, teamId, valor</li>
+<li><strong>TacticDraft</strong>: teamId, nome, formação, posições (JSON x/y por jogador), notas</li>
+</ul>
+<p>Nota: o &quot;uma equipa por utilizador, mas pode mudar a equipa quando quiser&quot; fica como <strong>editar a Team</strong> (nome, escudo, formação) ou <strong>trocar de clube</strong> (reatribuir <code>Team.userId</code>), à tua escolha.</p>
+<hr>
+<h2>5. Requisitos funcionais</h2>
+<h3>5.1 Contas</h3>
+<ul>
+<li>Registo: nome, email, senha, data de nascimento, telemóvel; login, logout, recuperar senha</li>
+<li>Validação com zod, senha com bcrypt, rate limit no login</li>
+<li>Perfil editável</li>
+</ul>
+<h3>5.2 Equipa e jogadores</h3>
+<ul>
+<li>Criar/editar a equipa (uma por utilizador)</li>
+<li>Ver elenco, ficha do jogador com atributos por grupo + radar</li>
+<li><strong>Editar atributos</strong> com as regras da liga: máx. <strong>5 pts por atributo por temporada por jogador</strong>, custo 1/2/5 pts conforme overall (≤79 / 80-89 / ≥90) calculado <strong>no momento de evoluir</strong></li>
+<li>Recalcular overall do jogador após evolução (ver pergunta em aberto nº 1)</li>
+<li>Trocar posição (50 pts)</li>
+</ul>
+<h3>5.3 Pontos</h3>
+<ul>
+<li>Pontos iniciais, vitória 3, empate 1, derrota 0</li>
+<li>Prémios de colocação (100/80/70/60) e individuais (artilheiro, assistências, melhor goleiro: 20 cada)</li>
+<li>Extrato completo (ledger) e saldo em tempo real</li>
+</ul>
+<h3>5.4 Mercado</h3>
+<ul>
+<li>Janela única entre temporadas</li>
+<li>Pool de agentes livres definido antes da janela</li>
+<li>Ordem de escolha invertida (último colocado escolhe primeiro)</li>
+<li>Preço pela tabela (até 85), máx. 2 contratações por janela</li>
+<li>Elenco de tamanho fixo (vender/dispensar para contratar)</li>
+<li>Vender = 50% do preço da tabela do overall atual; dispensar = 0</li>
+<li>Bloquear a compra se faltarem pontos</li>
+</ul>
+<h3>5.5 Leilão (86+)</h3>
+<ul>
+<li>Lance mínimo = preço da tabela, vence o maior lance, paga o que ofertou</li>
+<li>Lance só com pontos disponíveis (<strong>reservar pontos</strong> do licitante líder)</li>
+<li>Empate: ganha o clube pior colocado</li>
+<li>Sem lances: volta ao pool</li>
+<li>Tempo real com Socket.IO, histórico de lances e contagem regressiva</li>
+</ul>
+<h3>5.6 Rating e tática</h3>
+<ul>
+<li><strong>Rating da equipa</strong> (ver secção 7)</li>
+<li>Evolução do rating ao longo da temporada (gráfico)</li>
+<li>Rascunhos de tática: escolher formação, arrastar jogadores no campo, guardar vários rascunhos, exportar como imagem</li>
+</ul>
+<h3>5.7 Administração</h3>
+<ul>
+<li>Papel <strong>ADMIN</strong> (tu): criar temporadas, abrir/fechar janela, definir pool, lançar resultados e prémios, corrigir erros</li>
+<li>Todas as ações críticas ficam em log</li>
+</ul>
+<hr>
+<h2>6. Requisitos não funcionais</h2>
+<ul>
+<li>Todas as regras validadas <strong>no servidor</strong> (o cliente nunca é confiável)</li>
+<li>Transações de base de dados (<code>prisma.$transaction</code>) em compra, venda, evolução e leilão</li>
+<li>Responsivo (mobile primeiro, os teus amigos vão usar no telemóvel)</li>
+<li>Tema escuro, rápido e com animações discretas</li>
+<li>Backups da base de dados</li>
+</ul>
+<hr>
+<h2>7. Cálculo do nível do time</h2>
+<p>Proposta simples e explicável:</p>
+<ol>
+<li>Para cada jogador na posição escalada, calcular o <strong>overall por posição</strong> (média ponderada dos atributos relevantes: ex. ST valoriza finishing, positioning, sprint speed; CB valora marking, tackles, strength).</li>
+<li><strong>Rating do onze</strong> = média dos 11 titulares.</li>
+<li><strong>Banco</strong> pesa pouco (ex. 10%).</li>
+<li><strong>Bónus de entrosamento</strong> (opcional): jogador fora da posição natural penaliza (−3 a −5).</li>
+<li>Mostrar também rating por setor (Ataque / Meio / Defesa / GR) em radar.</li>
+</ol>
+<p>Assim cada evolução ou contratação mexe visivelmente no rating.</p>
+<hr>
+<h2>8. Fases de desenvolvimento</h2>
+<div class="md-table" role="group" aria-label="Table" tabindex="0"><table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Entrega</th>
+<th>Duração estimada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Setup do monorepo, Postgres, Prisma, lint, CI básico</td>
+<td>1-2 dias</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Import do dataset CSV → <code>BasePlayer</code> + busca e filtros de jogadores</td>
+<td>2-3 dias</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Auth: registo, login, perfil, equipa (1 por user)</td>
+<td>3-4 dias</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Elenco, ficha do jogador, atributos agrupados, radar</td>
+<td>3-4 dias</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Motor de regras: pontos (ledger), evolução, troca de posição</td>
+<td>4-5 dias</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Mercado: janela, pool, ordem invertida, comprar/vender/dispensar</td>
+<td>4-5 dias</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Leilão em tempo real (Socket.IO)</td>
+<td>4-5 dias</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Rating da equipa + gráficos de evolução</td>
+<td>3 dias</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Campo tático com drag &amp; drop + rascunhos + exportar PNG</td>
+<td>4 dias</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Painel admin: temporadas, resultados, prémios, classificação</td>
+<td>3-4 dias</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Polimento visual, animações, testes, deploy</td>
+<td>4-5 dias</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Deploy sugerido: <strong>Vercel</strong> (web) + <strong>Railway/Render/Fly.io</strong> (API + Postgres) ou <strong>Neon/Supabase</strong> para a base de dados.</p>
+<hr>
+<h2>9. Ideias para ficar mais impactante</h2>
+<ul>
+<li><strong>Cartas estilo FUT</strong> com cor por faixa de overall (bronze/prata/ouro/especial) e animação ao abrir</li>
+<li><strong>Animação de revelação</strong> quando ganhas um leilão</li>
+<li><strong>Classificação ao vivo</strong> da liga com tabela, artilheiros e assistências</li>
+<li><strong>Comparador</strong> de dois jogadores (radar sobreposto)</li>
+<li><strong>Histórico de transferências</strong> (feed de notícias da liga: &quot;Alessio levou o jogador X por 460 pts&quot;)</li>
+<li><strong>Simulador de evolução</strong>: antes de gastar pontos, vês o novo overall e o custo</li>
+<li><strong>Hall da fama</strong> por temporada</li>
+<li><strong>PWA</strong> para instalar no telemóvel e notificações de novo lance</li>
+</ul>
+<hr>
+<h2>10. Perguntas em aberto (a decidir antes da Fase 4)</h2>
+<ol>
+<li><strong>Como recalcular o overall após editar atributos?</strong> Fórmula por posição (recomendado) ou overall fixo mudado manualmente?</li>
+<li><strong>Pontos iniciais = 50</strong> parece baixo comparado com preços de 20 a 550. É mesmo isso? Os 50 são só para evoluir, ou também para comprar?</li>
+<li>O PDF lista 3 nomes (Alessio, Esménio, Guarita) mas a liga é de <strong>6 clubes</strong>. Quem são os outros 3?</li>
+<li><strong>Tamanho do elenco</strong>: quantos jogadores (ex. 18, 23)?</li>
+<li>Jogadores <strong>86 a 91+</strong>: leilão obrigatório. E acima de 91, usa o dataset até 91 ou há exceções?</li>
+<li>Os <strong>pontos do campeonato</strong> (3/1/0) entram no mesmo saldo usado para comprar e evoluir? (assumi que sim)</li>
+<li>Quem lança resultados: só o admin, ou cada clube confirma o seu jogo?</li>
+<li><strong>Trocar de equipa</strong>: significa editar a equipa atual ou mudar para outro clube existente?</li>
+<li>As evoluções de <strong>guarda-redes</strong> seguem a mesma tabela de custo?</li>
+</ol>
+<hr>
+<h2>11. Próximo passo</h2>
+<p>Começar pela <strong>Fase 0 + Fase 1</strong> (setup e importação do dataset), porque tudo depende de ter os jogadores na base de dados. Posso gerar a seguir o <code>schema.prisma</code> completo e o script de seed do CSV.</p>
+
+</body></html>

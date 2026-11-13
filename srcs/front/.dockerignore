@@ -1,0 +1,15 @@
+node_modules
+.next
+npm-debug.log
+.git
+.gitignore
+.env
+.env.*
+coverage
+Dockerfile
+
+# local editor metadata and generated folders
+.agents
+.claude
+.cursor
+.devin

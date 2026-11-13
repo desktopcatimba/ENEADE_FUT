@@ -1,0 +1,24 @@
+continua.
+
+E por outra nao pode os jogadores que voce cria devem ter os mesmos campos que os do jogadores base, menos a versao.
+
+
+e houve uma atualizao quanto a regra de negocio, so pode se selecionar teams que existem, da de criar novos teams e novos jogadores. Entao dessa forma fica mais facilexibir os planteis, fazer transferencias, e tambem add mais taticas, ainda fanta taticas
+
+
+e as cores que usaste no modo claro nao gostei altera, o menu deve mesmo estar colado ao a margem, e aoutra parte fica no espaco que restar a ocupar tudo.
+
+
+e por outra, quando eu estou em ex: /teams/{id} a ver planel do team, se eu clicar em um card onde tem um jogador deve me levar para a tela desse player tipo players/{id}
+
+
+
+e por outr, na tela de meu team acredito que tenha bug, porque um jogador aparece mais de uma vez.
+
+E por outra, quando eu entro em /myteam so posso ver o plantel(de forma organizada, podendo fazer filtro por posicao, overal, idade) e aparecerao em cards(se eu clicar num jogador que faz parte do meu team, deve poder parecer em players/{id} um botao de editar meu jogador onde vou poder alterar todos os seus atribuitos, menos o overal que sera calculado automaticamente em funcao a media aritmetica das suas caracteristicas dos atributos)
+
+
+e na parte de ## Venda de jogadores em /transfers, coloca tambem uma paginacao para a tela nao ficar muito grande, e veja tambem porque que os players aparecerm mais de 1,2 vezes
+
+
+e quando realizo uma venda deve ir em transferencia(em tranferencia deve ter um campo type para(venda, compra, emprestimo que custa a mentado do valorer de conta desse jogador)). em em transfs deve poder ter um botao para mim ir ver o meu historico (leilao, vendar, compras, emprestimos)
