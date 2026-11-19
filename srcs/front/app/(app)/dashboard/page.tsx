@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 import { api, errorText } from "@/lib/api";
 import { useAuth } from "@/components/AuthProvider";
 import { useFetch } from "@/lib/useFetch";
@@ -21,7 +22,6 @@ export default function DashboardPage() {
 }
 
 function CreateOrSelectTeam({ onCreated }: { onCreated: () => Promise<void> }) {
-  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState("");
   const { data, loading } = useFetch<{ teams: Team[]; total: number }>("/teams/catalog");
@@ -30,12 +30,12 @@ function CreateOrSelectTeam({ onCreated }: { onCreated: () => Promise<void> }) {
     e.preventDefault();
     const form = Object.fromEntries(new FormData(e.currentTarget));
     setBusy(true);
-    setError(null);
     try {
       await api("/teams", { method: "POST", body: JSON.stringify(form) });
       await onCreated();
+      toast.success("Equipa criada com sucesso.");
     } catch (err) {
-      setError(errorText(err));
+      toast.error(errorText(err));
     } finally {
       setBusy(false);
     }
@@ -43,12 +43,12 @@ function CreateOrSelectTeam({ onCreated }: { onCreated: () => Promise<void> }) {
 
   async function selectTeam(teamId: string) {
     setBusy(true);
-    setError(null);
     try {
       await api("/teams/select", { method: "POST", body: JSON.stringify({ teamId }) });
       await onCreated();
+      toast.success("Equipa selecionada.");
     } catch (err) {
-      setError(errorText(err));
+      toast.error(errorText(err));
     } finally {
       setBusy(false);
     }
@@ -81,7 +81,6 @@ function CreateOrSelectTeam({ onCreated }: { onCreated: () => Promise<void> }) {
               {FORMATIONS.map((f) => <option key={f}>{f}</option>)}
             </select>
           </label>
-          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
           <button className="rounded-lg bg-turf-dark px-4 py-2 font-semibold text-white hover:opacity-95" disabled={busy}>
             {busy ? "A criar..." : "Criar equipa"}
           </button>
@@ -128,15 +127,14 @@ function TeamView({ team, onChange }: { team: Team; onChange: () => Promise<void
   const me = useFetch<{ team: Team; points: number }>("/teams/me");
   const ledger = useFetch<{ balance: number; entries: LedgerEntry[] }>("/teams/me/ledger");
   const players = useFetch<{ team: Team | null; players: TeamPlayerSummary[] }>(`/teams/me/players?ts=${refreshTick}`);
-  const [error, setError] = useState<string | null>(null);
 
   async function patch(body: Partial<Team>) {
-    setError(null);
     try {
       await api("/teams/me", { method: "PATCH", body: JSON.stringify(body) });
       await onChange();
+      toast.success("Equipa atualizada.");
     } catch (err) {
-      setError(errorText(err));
+      toast.error(errorText(err));
     }
   }
 
@@ -218,7 +216,6 @@ function TeamView({ team, onChange }: { team: Team; onChange: () => Promise<void
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
             <h2 className="mb-3 font-display text-xl font-bold text-turf-dark">Extrato</h2>
             {ledger.loading && <p className="text-sm text-slate-500">A carregar...</p>}
-            {ledger.error && <p className="text-sm text-red-600">{ledger.error}</p>}
             {ledger.data?.entries.length === 0 && <p className="text-sm text-slate-500">Ainda sem movimentos.</p>}
             <ul className="grid gap-2">
               {ledger.data?.entries.map((e) => (
@@ -258,7 +255,6 @@ function TeamView({ team, onChange }: { team: Team; onChange: () => Promise<void
             Esta formação pertence à equipa do catálogo e não pode ser alterada.
           </div>
         )}
-        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
       </div>
     </div>
   );

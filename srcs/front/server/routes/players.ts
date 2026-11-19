@@ -15,12 +15,20 @@ const querySchema = z.object({
   nationality: z.string().trim().optional(),
   minOverall: z.coerce.number().int().min(1).max(99).optional(),
   maxOverall: z.coerce.number().int().min(1).max(99).optional(),
+  minAge: z.coerce.number().int().min(1).max(100).optional(),
+  maxAge: z.coerce.number().int().min(1).max(100).optional(),
   fifaVersion: z.coerce.number().int().refine((v) => v === 23 || v === 24, "Use 23 ou 24").default(24),
   sort: z.enum(["overall", "potential", "name", "age"]).default("overall"),
   order: z.enum(["asc", "desc"]).default("desc"),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(20),
-});
+}).refine(
+  (filters) => filters.minOverall === undefined || filters.maxOverall === undefined || filters.minOverall <= filters.maxOverall,
+  { path: ["maxOverall"], message: "O overall máximo deve ser igual ou superior ao mínimo" },
+).refine(
+  (filters) => filters.minAge === undefined || filters.maxAge === undefined || filters.minAge < filters.maxAge,
+  { path: ["maxAge"], message: "A idade limite superior deve ser maior que a inferior" },
+);
 
 const GROUPS = ["attacking", "skill", "movement", "power", "mentality", "defending", "goalkeeping"] as const;
 
@@ -48,6 +56,7 @@ playersRouter.get("/", async (req, res) => {
   if (f.club) where.clubName = { contains: f.club, mode: "insensitive" };
   if (f.nationality) where.nationality = { contains: f.nationality, mode: "insensitive" };
   if (f.minOverall || f.maxOverall) where.overall = { gte: f.minOverall, lte: f.maxOverall };
+  if (f.minAge !== undefined || f.maxAge !== undefined) where.age = { gt: f.minAge, lt: f.maxAge };
 
   const sortField = f.sort === "name" ? "shortName" : f.sort;
   const [total, players] = await Promise.all([

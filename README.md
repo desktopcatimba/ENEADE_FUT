@@ -1,36 +1,34 @@
 # ENEADE FUT
 
-Estrutura do projeto organizada em raiz + srcs:
-
-- `srcs/back` → backend em Express + Prisma
-- `srcs/front` → frontend em Next.js
-- `srcs/.env` → variáveis compartilhadas do ambiente
-- `srcs/docker-compose.yml` → orquestração do stack
-- `Makefile` → comandos rápidos para subir/gerir a aplicação
+A aplicação web, as APIs e a autenticação correm juntas no Next.js
+(`srcs/front`). O PostgreSQL é o único serviço separado e é gerido pelo Docker
+Compose.
 
 ## Executar
 
 Na raiz do projeto:
 
 ```bash
-make
+make up
 ```
 
 Acesso:
-- Frontend: http://localhost:3000
-- API: http://localhost:4000
-- PostgreSQL: localhost:5432
+- Frontend e API: http://localhost:3000 (`/api/...` para as APIs)
+- PostgreSQL: localhost:5433
 
 ## Comandos úteis
 
 ```bash
+make seed
 make logs
 make down
 make build
-make api
 make web
 make db-push
 make db-migrate
 make db-studio
-make seed
 ```
+
+As variáveis partilhadas ficam em `srcs/.env`. Para executar localmente sem
+Docker, inicia o PostgreSQL e corre `npm run dev` dentro de `srcs/front`.
+`make down` preserva os dados; `make fclean` também apaga o volume do banco.

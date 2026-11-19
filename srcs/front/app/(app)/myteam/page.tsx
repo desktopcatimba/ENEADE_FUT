@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { LoadingState } from "@/components/LoadingState";
 import { api, errorText } from "@/lib/api";
@@ -14,7 +15,7 @@ export default function MyTeamPage() {
   const { team } = useAuth();
   const canEdit = Boolean(team?.userId);
   const [refreshTick, setRefreshTick] = useState(0);
-  const { data, loading, error } = useFetch<{ team: Team | null; players: TeamPlayerSummary[] }>(
+  const { data, loading } = useFetch<{ team: Team | null; players: TeamPlayerSummary[] }>(
     team ? `/teams/me/players?ts=${refreshTick}` : null,
   );
 
@@ -46,7 +47,6 @@ export default function MyTeamPage() {
   }
 
   if (loading && !data) return <LoadingState label="A preparar o plantel..." />;
-  if (error) return <p className="text-red-600">{error}</p>;
 
   const players = data?.players ?? [];
 
@@ -135,7 +135,6 @@ function PlayerEditor({ player, onSaved }: { player: TeamPlayerSummary; onSaved:
     attrs: { ...player.attrs },
   });
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setForm({ overall: player.overall, position: player.position, attrs: { ...player.attrs } });
@@ -145,7 +144,6 @@ function PlayerEditor({ player, onSaved }: { player: TeamPlayerSummary; onSaved:
 
   async function save() {
     setSaving(true);
-    setMessage(null);
     try {
       await api(`/teams/me/players/${player.id}`, {
         method: "PATCH",
@@ -156,9 +154,9 @@ function PlayerEditor({ player, onSaved }: { player: TeamPlayerSummary; onSaved:
         }),
       });
       onSaved();
-      setMessage("Atributos atualizados.");
+      toast.success("Atributos atualizados.");
     } catch (err) {
-      setMessage(errorText(err));
+      toast.error(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -218,8 +216,6 @@ function PlayerEditor({ player, onSaved }: { player: TeamPlayerSummary; onSaved:
           </label>
         ))}
       </div>
-
-      {message && <p className="text-sm text-slate-600 dark:text-slate-300">{message}</p>}
 
       <button
         type="button"

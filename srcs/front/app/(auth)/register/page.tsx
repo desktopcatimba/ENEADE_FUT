@@ -2,26 +2,26 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { api, errorText } from "@/lib/api";
 import { useAuth } from "@/components/AuthProvider";
 
 export default function RegisterPage() {
   const { refresh } = useAuth();
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const f = Object.fromEntries(new FormData(e.currentTarget));
     setBusy(true);
-    setError(null);
     try {
       await api("/auth/register", { method: "POST", body: JSON.stringify(f) });
       await refresh();
+      toast.success("Conta criada com sucesso.");
       router.push("/dashboard");
     } catch (err) {
-      setError(errorText(err));
+      toast.error(errorText(err));
     } finally {
       setBusy(false);
     }
@@ -47,7 +47,6 @@ export default function RegisterPage() {
           <input className="input" name="phone" type="tel" required placeholder="+244 900 000 000" autoComplete="tel" />
         </label>
       </div>
-      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <button className="btn" disabled={busy}>{busy ? "A criar..." : "Criar conta"}</button>
       <p className="text-sm text-muted">Já tens conta? <Link href="/login" className="font-semibold text-turf underline">Entrar</Link></p>
     </form>

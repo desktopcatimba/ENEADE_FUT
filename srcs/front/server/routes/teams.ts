@@ -381,7 +381,10 @@ teamsRouter.get("/me/players", async (req, res) => {
 teamsRouter.patch("/me/players/:id", async (req, res) => {
   const id = req.params.id;
   const playerSchema = z.object({
-    attrs: z.record(z.string(), z.coerce.number().int().min(0).max(99)).min(1),
+    attrs: z.record(z.string(), z.coerce.number().int().min(0).max(99)).refine(
+      (attrs) => Object.keys(attrs).length > 0,
+      "Indica pelo menos um atributo.",
+    ),
   });
 
   const data = parse(playerSchema, req.body);

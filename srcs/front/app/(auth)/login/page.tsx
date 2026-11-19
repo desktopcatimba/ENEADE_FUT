@@ -2,29 +2,29 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { api, errorText } from "@/lib/api";
 import { useAuth } from "@/components/AuthProvider";
 
 export default function LoginPage() {
   const { refresh } = useAuth();
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     setBusy(true);
-    setError(null);
     try {
       await api("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email: f.get("email"), password: f.get("password") }),
       });
       await refresh();
+      toast.success("Sessão iniciada.");
       router.push("/dashboard");
     } catch (err) {
-      setError(errorText(err));
+      toast.error(errorText(err));
     } finally {
       setBusy(false);
     }
@@ -39,7 +39,6 @@ export default function LoginPage() {
       <label className="grid gap-1 text-sm">Senha
         <input className="input" name="password" type="password" required autoComplete="current-password" />
       </label>
-      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <button className="btn" disabled={busy}>{busy ? "A entrar..." : "Entrar"}</button>
       <p className="text-sm text-muted">Ainda não tens conta? <Link href="/register" className="font-semibold text-turf underline">Criar conta</Link></p>
     </form>

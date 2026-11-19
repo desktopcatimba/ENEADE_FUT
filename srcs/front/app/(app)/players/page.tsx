@@ -12,8 +12,12 @@ export default function PlayersPage() {
   const [dq, setDq] = useState("");
   const [position, setPosition] = useState("");
   const [minOverall, setMinOverall] = useState("");
+  const [maxOverall, setMaxOverall] = useState("");
+  const [minAge, setMinAge] = useState("");
+  const [maxAge, setMaxAge] = useState("");
   const [fifaVersion, setFifaVersion] = useState("24");
   const [sort, setSort] = useState("overall");
+  const [order, setOrder] = useState("desc");
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -21,28 +25,43 @@ export default function PlayersPage() {
     return () => clearTimeout(t);
   }, [q]);
 
-  const params = new URLSearchParams({ fifaVersion, sort, page: String(page), limit: "24" });
+  const params = new URLSearchParams({ fifaVersion, sort, order, page: String(page), limit: "24" });
   if (dq) params.set("q", dq);
   if (position) params.set("position", position);
   if (minOverall) params.set("minOverall", minOverall);
+  if (maxOverall) params.set("maxOverall", maxOverall);
+  if (minAge) params.set("minAge", minAge);
+  if (maxAge) params.set("maxAge", maxAge);
 
-  const { data, error, loading } = useFetch<PlayersPage>(`/players?${params}`);
+  const { data, loading } = useFetch<PlayersPage>(`/players?${params}`);
   const reset = <T,>(set: (v: T) => void) => (v: T) => { set(v); setPage(1); };
 
   return (
     <div className="grid gap-6">
       <h1 className="font-display text-4xl font-bold text-turf-dark">Jogadores</h1>
 
-      <div className="grid gap-3 rounded-lg border border-line bg-paper p-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 rounded-lg border border-line bg-paper p-4 sm:grid-cols-2 lg:grid-cols-4">
         <input className="input lg:col-span-2" placeholder="Pesquisar por nome" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Pesquisar por nome" />
         <select className="input" value={position} onChange={(e) => reset(setPosition)(e.target.value)} aria-label="Posição">
           <option value="">Todas as posições</option>
           {POSITIONS.map((p) => <option key={p}>{p}</option>)}
         </select>
-        <select className="input" value={minOverall} onChange={(e) => reset(setMinOverall)(e.target.value)} aria-label="Overall mínimo">
-          <option value="">Qualquer overall</option>
-          {[90, 86, 80, 75, 70, 60].map((n) => <option key={n} value={n}>{n}+</option>)}
-        </select>
+        <label className="grid gap-1 text-sm text-muted">
+          Overall mínimo
+          <input className="input" type="number" min="1" max="99" placeholder="70" value={minOverall} onChange={(e) => reset(setMinOverall)(e.target.value)} />
+        </label>
+        <label className="grid gap-1 text-sm text-muted">
+          Overall máximo
+          <input className="input" type="number" min="1" max="99" placeholder="75" value={maxOverall} onChange={(e) => reset(setMaxOverall)(e.target.value)} />
+        </label>
+        <label className="grid gap-1 text-sm text-muted">
+          Idade acima de
+          <input className="input" type="number" min="1" max="100" placeholder="18" value={minAge} onChange={(e) => reset(setMinAge)(e.target.value)} />
+        </label>
+        <label className="grid gap-1 text-sm text-muted">
+          Idade abaixo de
+          <input className="input" type="number" min="1" max="100" placeholder="25" value={maxAge} onChange={(e) => reset(setMaxAge)(e.target.value)} />
+        </label>
         <div className="flex gap-2">
           <select className="input" value={fifaVersion} onChange={(e) => reset(setFifaVersion)(e.target.value)} aria-label="Versão do jogo">
             <option value="24">FIFA 24</option>
@@ -54,10 +73,13 @@ export default function PlayersPage() {
             <option value="age">Idade</option>
             <option value="name">Nome</option>
           </select>
+          <select className="input" value={order} onChange={(e) => reset(setOrder)(e.target.value)} aria-label="Ordem">
+            <option value="desc">Descendente</option>
+            <option value="asc">Ascendente</option>
+          </select>
         </div>
       </div>
 
-      {error && <p role="alert" className="text-danger">{error}</p>}
       {loading && !data && <LoadingState label="A carregar jogadores..." compact />}
       {data && data.players.length === 0 && <p className="text-muted">Nenhum jogador encontrado. Tenta outro nome ou limpa os filtros.</p>}
 

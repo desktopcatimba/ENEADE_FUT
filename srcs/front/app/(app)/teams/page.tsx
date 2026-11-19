@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { LoadingState } from "@/components/LoadingState";
 import { api, errorText } from "@/lib/api";
@@ -13,7 +14,7 @@ export default function TeamsPage() {
   const [page, setPage] = useState(1);
   const [busy, setBusy] = useState<string | null>(null);
   const { refresh } = useAuth();
-  const { data, error, loading } = useFetch<TeamListPage>(`/teams?page=${page}&limit=12&q=${encodeURIComponent(q)}`);
+  const { data, loading } = useFetch<TeamListPage>(`/teams?page=${page}&limit=12&q=${encodeURIComponent(q)}`);
 
   const totalPages = useMemo(() => Math.max(1, data?.pages ?? 1), [data?.pages]);
 
@@ -22,8 +23,9 @@ export default function TeamsPage() {
     try {
       await api("/teams/select", { method: "POST", body: JSON.stringify({ teamId }) });
       await refresh();
+      toast.success("Equipa selecionada.");
     } catch (err) {
-      alert(errorText(err));
+      toast.error(errorText(err));
     } finally {
       setBusy(null);
     }
@@ -51,7 +53,6 @@ export default function TeamsPage() {
         />
       </div>
 
-      {error && <p className="text-red-600">{error}</p>}
       {loading && !data && <LoadingState label="A procurar equipas..." compact />}
 
       {!loading && teams.length === 0 && (<p className="text-slate-500">Nenhuma equipa encontrada para esta pesquisa.</p>)}

@@ -1,7 +1,8 @@
+name: eneade-fut
+
 services:
   db:
     image: postgres:16-alpine
-    container_name: eneade-fut-db
     restart: unless-stopped
     env_file:
       - ./.env
@@ -10,7 +11,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,12 +20,10 @@ services:
       timeout: 5s
       retries: 10
 
-  api:
-    image: api:1.0
+  web:
     build:
-      context: ./back
+      context: ./front
       dockerfile: Dockerfile
-    container_name: eneade-fut-api
     restart: unless-stopped
     depends_on:
       db:
@@ -33,44 +32,22 @@ services:
       - ./.env
     environment:
       NODE_ENV: development
-      PORT: 4000
-      CORS_ORIGIN: http://localhost:3000
+      PORT: 3000
       JWT_SECRET: ${JWT_SECRET:-change-me-dev-secret-1234567890}
       INITIAL_POINTS: ${INITIAL_POINTS:-50}
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/eneade_fut?schema=public}
     ports:
-      - "4000:4000"
-      - "5555:5555"
-    volumes:
-      - ./back:/app
-      - /app/node_modules
-    command: >
-      sh -c "npm install &&
-             npx prisma generate &&
-             npx prisma db push &&
-             npm run dev"
-
-  web:
-    image: web:1.0
-    build:
-      context: ./front
-      dockerfile: Dockerfile
-    container_name: eneade-fut-web
-    restart: unless-stopped
-    depends_on:
-      - api
-    env_file:
-      - ./.env
-    environment:
-      NODE_ENV: development
-      PORT: 3000
-      API_URL: ${API_URL:-http://api:4000}
-    ports:
       - "3000:3000"
+      - "5555:5555"
     volumes:
       - ./front:/app
       - /app/node_modules
-    command: npm run dev -- --hostname 0.0.0.0 --port 3000
+      - /app/.next
+    command: >
+      sh -c "npx prisma db push --schema prisma/schema.prisma &&
+             npm run dev -- --hostname 0.0.0.0 --port 3000"
 
 volumes:
   postgres_data:
+    external: true
+    name: srcs_postgres_data

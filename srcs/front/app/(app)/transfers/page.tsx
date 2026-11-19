@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { LoadingState } from "@/components/LoadingState";
 import { api, errorText } from "@/lib/api";
@@ -52,8 +53,6 @@ export default function TransfersPage() {
   const [page, setPage] = useState(1);
   const [refreshTick, setRefreshTick] = useState(0);
   const [busy, setBusy] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const market = useFetch<MarketResponse>(`/transfers/market?q=${encodeURIComponent(query)}&page=${page}&limit=12&ts=${refreshTick}`);
   const roster = useFetch<MyRosterResponse>(canTransfer ? `/transfers/mine?ts=${refreshTick}` : null);
 
@@ -63,14 +62,12 @@ export default function TransfersPage() {
 
   async function performAction(key: string, path: string, body: Record<string, unknown>, success: string) {
     setBusy(key);
-    setError(null);
-    setMessage(null);
     try {
       await api(path, { method: "POST", body: JSON.stringify(body) });
-      setMessage(success);
+      toast.success(success);
       refreshMarket();
     } catch (reason) {
-      setError(errorText(reason));
+      toast.error(errorText(reason));
     } finally {
       setBusy(null);
     }
@@ -101,9 +98,6 @@ export default function TransfersPage() {
           Podes consultar o mercado, mas para comprar, vender ou licitar precisas de criar uma equipa própria.
         </p>
       )}
-      {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-200">{error}</p>}
-      {message && <p role="status" className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">{message}</p>}
-
       <section className="grid gap-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
@@ -119,7 +113,6 @@ export default function TransfersPage() {
         </div>
 
         {market.loading && !market.data ? <LoadingState label="A consultar o mercado..." /> : null}
-        {market.error && <p className="text-sm text-red-600">{market.error}</p>}
         {!market.loading && availablePlayers.length === 0 && <p className="text-sm text-slate-500">Não foram encontrados jogadores disponíveis.</p>}
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -191,7 +184,6 @@ export default function TransfersPage() {
             <h2 className="font-display text-3xl font-bold text-turf-dark">Venda de jogadores</h2>
           </div>
           {roster.loading && !roster.data ? <LoadingState label="A carregar o teu plantel..." compact /> : null}
-          {roster.error && <p className="text-sm text-red-600">{roster.error}</p>}
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {ownPlayers.map((player) => (
               <article key={player.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">

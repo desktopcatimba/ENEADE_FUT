@@ -27,10 +27,10 @@ function barColor(v: number) {
 
 export default function PlayerPage() {
   const { id } = useParams<{ id: string }>();
-  const { data, error, loading } = useFetch<{ player: PlayerDetail }>(`/players/${id}`);
+  const { data, loading } = useFetch<{ player: PlayerDetail }>(`/players/${id}`);
 
   if (loading) return <p className="text-muted">A carregar...</p>;
-  if (error || !data) return <p role="alert" className="text-danger">{error ?? "Jogador não encontrado"}</p>;
+  if (!data) return <p className="text-muted">Jogador não encontrado.</p>;
 
   const p = data.player;
   const isGK = p.positions.includes("GK");

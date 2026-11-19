@@ -112,7 +112,7 @@ transfersRouter.get("/market", async (req, res) => {
       take: 30,
     }),
     (async () => {
-      const team = await prisma.team.findUnique({ where: { userId: req.user!.id } });
+      const team = await prisma.team.findFirst({ where: { userId: req.user!.id } });
       return team ? getBalance(team.id) : 0;
     })(),
   ]);

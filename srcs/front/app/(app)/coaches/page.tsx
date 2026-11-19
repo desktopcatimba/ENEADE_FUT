@@ -13,7 +13,7 @@ type Coach = {
 
 export default function CoachesPage() {
   const [q, setQ] = useState("");
-  const { data, error, loading } = useFetch<{ coaches: Coach[]; total: number }>("/coaches");
+  const { data, loading } = useFetch<{ coaches: Coach[]; total: number }>("/coaches");
   const coaches = (data?.coaches ?? []).filter((coach) => `${coach.name} ${coach.teamName ?? ""}`.toLowerCase().includes(q.toLowerCase()));
 
   return (
@@ -31,7 +31,6 @@ export default function CoachesPage() {
         />
       </div>
 
-      {error && <p className="text-red-600">{error}</p>}
       {loading && !data && <p className="text-slate-500">A carregar treinadores...</p>}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

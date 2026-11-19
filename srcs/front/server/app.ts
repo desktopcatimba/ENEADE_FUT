@@ -8,6 +8,7 @@ import { teamsRouter } from "./routes/teams";
 import { playersRouter } from "./routes/players";
 import { coachesRouter } from "./routes/coaches";
 import { transfersRouter } from "./routes/transfers";
+import { footballRouter } from "./routes/football";
 import { errorHandler } from "./middleware/error";
 
 export const app = express();
@@ -23,6 +24,7 @@ app.use("/teams", teamsRouter);
 app.use("/coaches", coachesRouter);
 app.use("/players", playersRouter);
 app.use("/transfers", transfersRouter);
+app.use("/football", footballRouter);
 
 app.use((_req, res) => res.status(404).json({ error: "Rota não encontrada" }));
 app.use(errorHandler);

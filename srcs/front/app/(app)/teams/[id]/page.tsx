@@ -28,10 +28,9 @@ type TeamDetailPayload = {
 export default function TeamDetailPage() {
   const params = useParams<{ id: string }>();
   const { team: currentTeam } = useAuth();
-  const { data, loading, error } = useFetch<TeamDetailPayload>(`/teams/${params.id}`);
+  const { data, loading } = useFetch<TeamDetailPayload>(`/teams/${params.id}`);
 
   if (loading && !data) return <LoadingState label="A preparar a equipa..." compact />;
-  if (error) return <p className="text-red-600">{error}</p>;
   if (!data?.team) return <p className="text-slate-500">Equipa não encontrada.</p>;
 
   const team = data.team;

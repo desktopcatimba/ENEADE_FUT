@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { apiFootball } from "../lib/apiFootball";
+import { env } from "../env";
 import { HttpError, parse } from "../lib/http";
 import { requireAdmin, requireAuth } from "../middleware/auth";
 
@@ -22,7 +23,6 @@ footballRouter.get("/", async (req, res) => {
 
 // Não conta para a quota diária
 footballRouter.get("/status", async (_req, res) => {
-  const { env } = await import("../env.js");
   if (!env.API_FOOTBALL_KEY) throw new HttpError(503, "API-Football não está configurada");
   const r = await fetch("https://v3.football.api-sports.io/status", { headers: { "x-apisports-key": env.API_FOOTBALL_KEY } });
   res.json(await r.json());
