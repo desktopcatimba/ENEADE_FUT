@@ -22,3 +22,25 @@ e na parte de ## Venda de jogadores em /transfers, coloca tambem uma paginacao p
 
 
 e quando realizo uma venda deve ir em transferencia(em tranferencia deve ter um campo type para(venda, compra, emprestimo que custa a mentado do valorer de conta desse jogador)). em em transfs deve poder ter um botao para mim ir ver o meu historico (leilao, vendar, compras, emprestimos)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tudo, mudei de ideia para facilitar, quero que ao back e front seja feito so no next, e nao quero mais separar o front no next e o back no node.
+
+Entao altera a estrututa pra que tudo funcione, desde as api ate ao front, dockerfile,
+
+E na parte de mostrar os players, add filtros para poder mostrar por overral, idade, asc e desc exe: 70 - 75 over, >18 e <25, asc.
